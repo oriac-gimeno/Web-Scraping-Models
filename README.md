@@ -1,3 +1,5 @@
+<img width="267" height="407" alt="WebScrapping_1" src="https://github.com/user-attachments/assets/ea49f199-601f-40b7-ba49-05b2364af5f9" />
+<img width="247" height="387" alt="WebScrapping_2" src="https://github.com/user-attachments/assets/0114ba04-59c6-4707-9de7-3708dd9ac17e" />
 # Web Scraping & Word Cloud Generator
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://www.python.org/)
