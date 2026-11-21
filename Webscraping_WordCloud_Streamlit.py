@@ -18,12 +18,15 @@ for i in range(5):
         urls.append(url)
 # Funció per a extreure el text de les URLs
 def get_text_from_url(url):
-#S'ha d'incloure uns "headers" per a que les pàgines pensin que es una persona "real" qui està accedint a la web
+# S'envia un User-Agent de navegador perquè molts mitjans no retornen contingut
+# útil sense ell. És un compromís conscient, explicat al README: una petició
+# per URL, sense recórrer el lloc i sense rotació d'agents ni proxies.
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
                    "Accept-Encoding": "*", "Connection": "keep-alive"
             }
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         
         # Extreure text de paràgrafs
@@ -32,7 +35,7 @@ def get_text_from_url(url):
 
         # Combinar el text dels paràgrafs amb els headers ponderats
         return paragraphs + ' ' 
-    except Exception as e:
+    except requests.RequestException as e:
         st.error(f"No s'ha pogut obtenir el text de la URL: {url}. Error: {e}")
         return ""
 
@@ -80,7 +83,7 @@ palabras_irrelevantes = {
     "tema", "temas", "sección", "secciones", "noticia", "noticias"
 }
 #Afegim alguns caràcters que hem trobat
-palabras_anadidas = {"\u200b", "\xa0", "editorial","Lectores","OFRECIDO","puede","cómo","hacer","forma","parte","además","según","tanto","algo"}
+palabras_anadidas = {"\u200b", "\xa0", "editorial","lectores","ofrecido","puede","cómo","hacer","forma","parte","además","según","tanto","algo"}
 
 stop_words = ['de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'del', 'se', 'las', 'por', 'un', 'para', 'con', 'no', 'una', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'sí', 'porque', 'esta', 'entre', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde', 'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos', 'e', 'esto', 'mí', 'antes', 'algunos', 'qué', 'unos', 'yo', 'otro', 'otras', 'otra', 'él', 'tanto', 'esa', 'estos', 'mucho', 'quienes', 'nada', 'muchos', 'cual', 'poco', 'ella', 'estar', 'estas', 'algunas', 'algo', 'nosotros', 'mi', 'mis', 'tú', 'te', 'ti', 'tu', 'tus', 'ellas', 'nosotras', 'vosotros', 'vosotras', 'os', 'mío', 'mía', 'míos', 'mías', 'tuyo', 'tuya', 'tuyos', 'tuyas', 'suyo', 'suya', 'suyos', 'suyas', 'nuestro', 'nuestra', 'nuestros', 'nuestras', 'vuestro', 'vuestra', 'vuestros', 'vuestras', 'esos', 'esas', 'estoy', 'estás', 'está', 'estamos', 'estáis', 'están', 'esté', 'estés', 'estemos', 'estéis', 'estén', 'estaré', 'estarás', 'estará', 'estaremos', 'estaréis', 'estarán', 'estaría', 'estarías', 'estaríamos', 'estaríais', 'estarían', 'estaba', 'estabas', 'estábamos', 'estabais', 'estaban', 'estuve', 'estuviste', 'estuvo', 'estuvimos', 'estuvisteis', 'estuvieron', 'estuviera', 'estuvieras', 'estuviéramos', 'estuvierais', 'estuvieran', 'estuviese', 'estuvieses', 'estuviésemos', 'estuvieseis', 'estuviesen', 'estando', 'estado', 'estada', 'estados', 'estadas', 'estad', 'he', 'has', 'ha', 'hemos', 'habéis', 'han', 'haya', 'hayas', 'hayamos', 'hayáis', 'hayan', 'habré', 'habrás', 'habrá', 'habremos', 'habréis', 'habrán', 'habría', 'habrías', 'habríamos', 'habríais', 'habrían', 'había', 'habías', 'habíamos', 'habíais', 'habían', 'hube', 'hubiste', 'hubo', 'hubimos', 'hubisteis', 'hubieron', 'hubiera', 'hubieras', 'hubiéramos', 'hubierais', 'hubieran', 'hubiese', 'hubieses', 'hubiésemos', 'hubieseis', 'hubiesen', 'habiendo', 'habido', 'habida', 'habidos', 'habidas', 'soy', 'eres', 'es', 'somos', 'sois', 'son', 'sea', 'seas', 'seamos', 'seáis', 'sean', 'seré', 'serás', 'será', 'seremos', 'seréis', 'serán', 'sería', 'serías', 'seríamos', 'seríais', 'serían', 'era', 'eras', 'éramos', 'erais', 'eran', 'fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron', 'fuera', 'fueras', 'fuéramos', 'fuerais', 'fueran', 'fuese', 'fueses', 'fuésemos', 'fueseis', 'fuesen', 'sintiendo', 'sentido', 'sentida', 'sentidos', 'sentidas', 'siente', 'sentid', 'tengo', 'tienes', 'tiene', 'tenemos', 'tenéis', 'tienen', 'tenga', 'tengas', 'tengamos', 'tengáis', 'tengan', 'tendré', 'tendrás', 'tendrá', 'tendremos', 'tendréis', 'tendrán', 'tendría', 'tendrías', 'tendríamos', 'tendríais', 'tendrían', 'tenía', 'tenías', 'teníamos', 'teníais', 'tenían', 'tuve', 'tuviste', 'tuvo', 'tuvimos', 'tuvisteis', 'tuvieron', 'tuviera', 'tuvieras', 'tuviéramos', 'tuvierais', 'tuvieran', 'tuviese', 'tuvieses', 'tuviésemos', 'tuvieseis', 'tuviesen', 'teniendo', 'tenido', 'tenida', 'tenidos', 'tenidas', 'tened']
 
@@ -94,8 +97,12 @@ def remove_irrelevant_words(text, url):
     url_name = re.sub(r'https?://(www\.)?', '', url)  # Elimina el protocol i 'www'
     url_name = re.sub(r'/.*$', '', url_name)  # Manté només el domini
 
+    # Normalitza abans de filtrar: minúscules i puntuació separada. Sense això,
+    # "Noticia" o "noticia," no coincideixen amb les llistes de paraules a treure.
+    text = re.sub(r"[^\w\s]", " ", text.lower())
+
     # Combina les paraules que volem eliminar
-    words_to_remove = set(url_name.split()).union(palabras_irrelevantes)
+    words_to_remove = set(url_name.lower().split()).union(palabras_irrelevantes)
 
     return ' '.join([word for word in text.split() if word not in words_to_remove])
 
