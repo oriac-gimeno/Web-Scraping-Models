@@ -18,9 +18,9 @@ for i in range(5):
         urls.append(url)
 # Funció per a extreure el text de les URLs
 def get_text_from_url(url):
-# S'envia un User-Agent de navegador perquè molts mitjans no retornen contingut
-# útil sense ell. És un compromís conscient, explicat al README: una petició
-# per URL, sense recórrer el lloc i sense rotació d'agents ni proxies.
+    # S'envia un User-Agent de navegador perquè molts mitjans no retornen contingut
+    # útil sense ell. És un compromís conscient, explicat al README: una petició
+    # per URL, sense recórrer el lloc i sense rotació d'agents ni proxies.
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
                    "Accept-Encoding": "*", "Connection": "keep-alive"
             }
@@ -101,8 +101,12 @@ def remove_irrelevant_words(text, url):
     # "Noticia" o "noticia," no coincideixen amb les llistes de paraules a treure.
     text = re.sub(r"[^\w\s]", " ", text.lower())
 
+    # El domini es normalitza igual que el text, si no "lavanguardia.com" no
+    # coincideix mai amb la paraula "lavanguardia" que apareix a la pagina.
+    url_name = re.sub(r"[^\w\s]", " ", url_name.lower())
+
     # Combina les paraules que volem eliminar
-    words_to_remove = set(url_name.lower().split()).union(palabras_irrelevantes)
+    words_to_remove = set(url_name.split()).union(palabras_irrelevantes)
 
     return ' '.join([word for word in text.split() if word not in words_to_remove])
 
@@ -112,6 +116,9 @@ def remove_irrelevant_words(text, url):
 custom_stopwords = set(stop_words).union(preposiciones).union(monosilabos).union(palabras_irrelevantes).union(palabras_anadidas).union(adverbios)
 
 
+
+# Nombre de paraules que es mostraran al WordCloud
+num_paraules = st.number_input("Indica el número de palabras para tu WordCloud:", min_value=10, max_value=500, value=150, step=5)
 
 # Botó per generar el WordCloud
 if st.button("Generar WordCloud"):
@@ -126,8 +133,6 @@ if st.button("Generar WordCloud"):
         # Filtrar paraules de 3 lletres
         filtered_text = filter_three_letter_words(all_text)
         
-        # Generar el WordCloud amb les 250 paraules més comunes 
-        num_paraules = 250
         wordcloud = generate_wordcloud(filtered_text, custom_stopwords, num_paraules)
 
         # Mostrar el WordCloud
